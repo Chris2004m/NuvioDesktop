@@ -250,7 +250,7 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
             activeProviderName
         },
         pauseOverlayEpisodeTitle = activeEpisodeTitle.orEmpty(),
-        pauseOverlayDescription = (pauseDescription ?: activeStreamSubtitle).orEmpty(),
+        pauseOverlayDescription = (activePauseDescription ?: activeStreamSubtitle).orEmpty(),
         resizeModeLabel = stringResource(resizeMode.labelRes),
         playbackSpeedLabel = formatPlaybackSpeedLabel(playbackSnapshot.playbackSpeed),
         subtitlesLabel = stringResource(Res.string.compose_player_subs),
@@ -370,6 +370,7 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
         episodeStreamItems = episodeStreamItems,
         blurUnwatchedEpisodes = metaScreenSettingsUiState.blurUnwatchedEpisodes,
         submitIntroSegmentType = submitIntroSegmentType,
+        submitIntroContentKey = activeSubmitIntroContentKey(),
         submitIntroStartTime = submitIntroStartTimeStr,
         submitIntroEndTime = submitIntroEndTimeStr,
         isSubmitIntroSubmitting = isSubmitIntroSubmitting,
@@ -393,6 +394,9 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
         subtitleAutoSyncIsLoading = subtitleAutoSyncState.isLoading,
         subtitleAutoSyncErrorMessage = subtitleAutoSyncState.errorMessage.orEmpty(),
         closeModalsToken = playerControlsCloseModalsToken,
+        submitIntroSuccessToken = playerControlsSubmitIntroSuccessToken,
+        notificationMessage = playerNotificationMessage,
+        notificationToken = playerNotificationToken,
         showOpeningOverlay = openingOverlayWanted,
         openingArtwork = background ?: poster,
         openingLogo = logo,
@@ -1140,10 +1144,16 @@ private fun PlayerScreenRuntime.submitIntroFromPlayerControls() {
             submitIntroSegmentType = "intro"
             submitIntroStatusMessage = null
             playerControlsCloseModalsToken += 1
+            playerControlsSubmitIntroSuccessToken += 1
         } else {
             submitIntroStatusMessage = "Unable to submit timestamps."
         }
     }
+}
+
+private fun PlayerScreenRuntime.activeSubmitIntroContentKey(): String {
+    val imdbId = activeSubmitIntroImdbId()?.takeIf { it.isNotBlank() } ?: return ""
+    return "$imdbId:$activeSeasonNumber:$activeEpisodeNumber"
 }
 
 private fun PlayerScreenRuntime.activeSubmitIntroImdbId(): String? =
